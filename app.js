@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser =require('body-parser');
 const app = express();
 const mongoose = require('mongoose');
-const stuffRoutes = require('./routes/stuff');
+const saucesRoutes = require('./routes/sauces');
 const userRoutes = require('./routes/user');
 const path = require('path');
 mongoose.connect('mongodb+srv://admin:admin@cluster0.dn5dc.mongodb.net/Cluster0?retryWrites=true&w=majority')
@@ -21,7 +21,7 @@ app.use((req, res, next) => {
   });
 app.use(bodyParser.json());
 app.use('/images', express.static(path.join(__dirname, 'images')));
-app.use('/api/stuff', stuffRoutes);
+app.use('/api/sauces', saucesRoutes);
 app.use('/api/auth', userRoutes);
 
 
