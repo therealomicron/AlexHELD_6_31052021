@@ -10,8 +10,12 @@ exports.createSauce = (req, res, next) => {
     description: req.body.sauce.description,
     imageUrl: url + '/images/' + req.file.filename,
     mainPepper: req.body.sauce.mainPepper,
-    heat: req.body.sauce.price,
-    userId: req.body.sauce.userId
+    heat: req.body.sauce.heat,
+    userId: req.body.sauce.userId,
+    likes: 0,
+    dislikes: 0,
+    usersLiked: " ",
+    usersDisliked: " "
   });
   sauce.save().then(
     () => {
