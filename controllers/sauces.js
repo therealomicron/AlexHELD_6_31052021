@@ -125,3 +125,128 @@ exports.getAllSauces = (req, res, next) => {
     }
   );
 };
+
+exports.likeSauce = (req, res, next) => {
+  let sauce = new Sauce({ _id: req.params._id });
+  if(req.body.like === 1) {
+    if(!sauce.usersLiked.includes(req.body.userId)) {
+      //add user to list and increase likes by 1 if uid 
+      //not present in usersLiked array
+      Sauce.updateOne(
+        {_id: req.params.id},
+        {
+          $push: {usersLiked: req.body.userId}
+        },
+        {
+          $inc: {likes: 1}
+        }
+        ).then(
+          () => {
+            res.status(200).json({
+              message: 'Sauce liked!'
+            })
+          }
+        ).catch((error) => {
+          res.status(400).json({
+            error: error
+          });
+        })
+    }
+    //if uid is present in usersDisliked, removes uid from array, 
+    //removes dislike, adds like, adds uid to array usersLiked
+    if(sauce.usersDisliked.includes(req.body.userId)) {
+      Sauce.updateOne(
+        {_id: req.params.id},
+        {
+          $pull: {usersDisliked: req.body.userId}
+        },
+        {
+          $inc: {dislikes: -1, likes: 1}
+        },
+        {
+          $push: {usersLiked: req.body.userId}
+        }
+      ).catch((error) => {
+        res.status(400).json({
+          error: error
+        });
+      })
+    } 
+  }
+  //if uid present in either usersDisliked or usersLiked array, 
+  //the uid is removed and the likes or dislikes are increased by -1
+  if(req.body.like === 0) {
+    if(sauce.usersDisliked.includes(req.body.userId)) {
+      Sauce.updateOne({_id: req.params.id},
+        {
+          $pull: {usersDisliked: req.body.userId}
+        },
+        {
+          $inc: {dislikes: -1}
+        }
+        ).then(
+          () => {
+            res.status(201).json({
+              message: 'Dislike removed'
+            })
+          }
+        ).catch((error) => {
+          res.status(400).json({
+            error: error
+          });
+        })
+    }
+    else if(sauce.usersLiked.includes(req.body.userId)) {
+      Sauce.updateOne({_id: req.params.id},
+        {
+          $pull: {usersLiked: req.body.userId}
+        },
+        {
+          $inc: {likes: -1}
+        }
+        ).then(
+          () => {
+            res.status(201).json({
+              message: 'Like removed'
+            })
+          }
+        ).catch((error) => {
+          res.status(400).json({
+            error: error
+          });
+        })
+    }
+  }
+  //if the user has already liked the sauce, the uid is pulled from
+  //the usersLiked array, the likes are increased by -1, dislikes
+  //increased by 1, the uid is then pushed to usersDisliked
+  if(req.body.like === -1) {
+    if(sauce.usersDisliked.includes(req.body.userId)) {
+      return res.status(409).json({
+        message: 'Sauce already disliked'
+      })
+    }
+    else if(sauce.usersLiked.includes(req.body.userId)) {
+      Sauce.updateOne({_id: req.params.id},
+        {
+          $pull: {usersLiked: req.body.userId}
+        },
+        {
+          $inc: {likes: -1, dislikes: 1}
+        },
+        {
+          $push: {usersDisliked: req.body.userId}
+        }).then(
+          () => {
+            res.status(201).json({
+              message: "Sauce disliked"
+            })
+          }
+        ).catch((error) => {
+          res.status(400).json({
+            error: error
+          });
+        })
+    }
+  }
+}
