@@ -166,7 +166,11 @@ exports.likeSauce = (req, res, next) => {
           $inc: {dislikes: -1, likes: 1},
           $push: {usersLiked: req.body.userId}
         }
-      ).catch((error) => {
+      ).then( () => {
+        res.status(201).json({
+          message: "Dislike removed, sauce liked."
+        })
+      }).catch((error) => {
         res.status(400).json({
           error: error
         });
@@ -185,7 +189,7 @@ exports.likeSauce = (req, res, next) => {
         ).then(
           () => {
             res.status(201).json({
-              message: 'Dislike removed'
+              message: 'Dislike removed.'
             })
           }
         ).catch((error) => {
