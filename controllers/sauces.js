@@ -127,7 +127,8 @@ exports.getAllSauces = (req, res, next) => {
 };
 
 exports.likeSauce = (req, res, next) => {
-  let sauce = new Sauce({ _id: req.params._id });
+Sauce.findOne({_id: req.params.id}).then()
+
   if(req.body.like === 1) {
     if(!sauce.usersLiked.includes(req.body.userId)) {
       //add user to list and increase likes by 1 if uid 
@@ -180,7 +181,12 @@ exports.likeSauce = (req, res, next) => {
   //if uid present in either usersDisliked or usersLiked array, 
   //the uid is removed and the likes or dislikes are increased by -1
   if(req.body.like === 0) {
+    console.log(sauce);
+    console.log('like/dislike annulation started');
+    console.log("Array users disliked " + sauce.usersDisliked);
+    console.log("Array users liked " + sauce.usersLiked);
     if(sauce.usersDisliked.includes(req.body.userId)) {
+      console.log("dislike annulation commencing");
       Sauce.updateOne({_id: req.params.id},
         {
           $pull: {usersDisliked: req.body.userId},
@@ -199,6 +205,7 @@ exports.likeSauce = (req, res, next) => {
         })
     }
     else if(sauce.usersLiked.includes(req.body.userId)) {
+      console.log("like annulation commencing");
       Sauce.updateOne({_id: req.params.id},
         {
           $pull: {usersLiked: req.body.userId},
