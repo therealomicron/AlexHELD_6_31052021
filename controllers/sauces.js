@@ -135,9 +135,7 @@ exports.likeSauce = (req, res, next) => {
       Sauce.updateOne(
         {_id: req.params.id},
         {
-          $push: {usersLiked: req.body.userId}
-        },
-        {
+          $push: {usersLiked: req.body.userId},
           $inc: {likes: 1}
         }
         ).then(
@@ -152,18 +150,20 @@ exports.likeSauce = (req, res, next) => {
           });
         })
     }
+    //if uid already present in usersLiked, returns 409 error
+    if(sauce.usersLiked.includes(req.body.userId)) {
+      return res.status(409).json({
+        message: "Sauce already liked!"
+      })
+    }
     //if uid is present in usersDisliked, removes uid from array, 
     //removes dislike, adds like, adds uid to array usersLiked
     if(sauce.usersDisliked.includes(req.body.userId)) {
       Sauce.updateOne(
         {_id: req.params.id},
         {
-          $pull: {usersDisliked: req.body.userId}
-        },
-        {
-          $inc: {dislikes: -1, likes: 1}
-        },
-        {
+          $pull: {usersDisliked: req.body.userId},
+          $inc: {dislikes: -1, likes: 1},
           $push: {usersLiked: req.body.userId}
         }
       ).catch((error) => {
@@ -179,9 +179,7 @@ exports.likeSauce = (req, res, next) => {
     if(sauce.usersDisliked.includes(req.body.userId)) {
       Sauce.updateOne({_id: req.params.id},
         {
-          $pull: {usersDisliked: req.body.userId}
-        },
-        {
+          $pull: {usersDisliked: req.body.userId},
           $inc: {dislikes: -1}
         }
         ).then(
@@ -199,9 +197,7 @@ exports.likeSauce = (req, res, next) => {
     else if(sauce.usersLiked.includes(req.body.userId)) {
       Sauce.updateOne({_id: req.params.id},
         {
-          $pull: {usersLiked: req.body.userId}
-        },
-        {
+          $pull: {usersLiked: req.body.userId},
           $inc: {likes: -1}
         }
         ).then(
@@ -217,24 +213,22 @@ exports.likeSauce = (req, res, next) => {
         })
     }
   }
-  //if the user has already liked the sauce, the uid is pulled from
-  //the usersLiked array, the likes are increased by -1, dislikes
-  //increased by 1, the uid is then pushed to usersDisliked
+  // if the sauce is already disliked, returns a message and does
+  // not write anything to the database.
   if(req.body.like === -1) {
     if(sauce.usersDisliked.includes(req.body.userId)) {
       return res.status(409).json({
         message: 'Sauce already disliked'
       })
     }
+  //if the user has already liked the sauce, the uid is pulled from
+  //the usersLiked array, the likes are increased by -1, dislikes
+  //increased by 1, the uid is then pushed to usersDisliked
     else if(sauce.usersLiked.includes(req.body.userId)) {
       Sauce.updateOne({_id: req.params.id},
         {
-          $pull: {usersLiked: req.body.userId}
-        },
-        {
-          $inc: {likes: -1, dislikes: 1}
-        },
-        {
+          $pull: {usersLiked: req.body.userId},
+          $inc: {likes: -1, dislikes: 1},
           $push: {usersDisliked: req.body.userId}
         }).then(
           () => {
@@ -248,5 +242,23 @@ exports.likeSauce = (req, res, next) => {
           });
         })
     }
+    else {
+      Sauce.updateOne({_id: req.params.id},
+        {
+          $push: {usersDisliked: req.body.userId},
+          $inc: {dislikes: 1}
+        }
+        ).then(
+          () => {
+            res.status(201).json({
+              message: "Sauce disliked"
+            })
+          }
+        ).catch((error) => {
+          res.status(400).json({
+            error: error
+          });
+        });
+      }
   }
 }
