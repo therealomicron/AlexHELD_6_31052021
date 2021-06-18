@@ -127,7 +127,8 @@ exports.getAllSauces = (req, res, next) => {
 };
 
 exports.likeSauce = (req, res, next) => {
-Sauce.findOne({_id: req.params.id}).then()
+Sauce.findOne({_id: req.params.id}).then(
+  (sauce) => {
 
   if(req.body.like === 1) {
     if(!sauce.usersLiked.includes(req.body.userId)) {
@@ -272,4 +273,9 @@ Sauce.findOne({_id: req.params.id}).then()
         });
       }
   }
+}).catch((error) => {
+  res.status(400).json({
+    error: error
+  });
+})
 }
